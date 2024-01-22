@@ -12,9 +12,8 @@
 name: "Mobb/Fortify"
 
 on:
-  pull_request:
-    branches: ["main"]
-
+  pull_request
+  
 jobs:
   scan-and-fix:
     name: Scan with Fortify and fix with Mobb
