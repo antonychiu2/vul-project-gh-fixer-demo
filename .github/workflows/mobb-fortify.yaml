@@ -12,12 +12,13 @@
 name: "Mobb/Fortify"
 
 on:
-  pull_request
-  
+  pull_request:
+    branches: ["main"]
+
 jobs:
   scan-and-fix:
     name: Scan with Fortify and fix with Mobb
-    runs-on: 'ubuntu-latest'
+    runs-on: ubuntu-20.04
     timeout-minutes: 360
     permissions:
       actions: write
@@ -55,8 +56,9 @@ jobs:
 
       - name: Run Fortify SAST scan
         run: |
-          ./bin/scancentral package -bt none -o fortify_package.zip
-          UPLOAD_OUTPUT=$(java -jar FodUpload.jar \
+          cd src
+          ../bin/scancentral package -bt none -o fortify_package.zip
+          UPLOAD_OUTPUT=$(java -jar ../FodUpload.jar \
             -z fortify_package.zip \
             -ep SingleScanOnly \
             -portalurl https://ams.fortify.com/ \
@@ -66,7 +68,7 @@ jobs:
             -releaseId ${{ secrets.FORTIFY_RELEASE_ID }} \
             -pp Queue)
           SCAN_ID=$(echo "$UPLOAD_OUTPUT" | sed -n 's/Scan \([0-9]*\).*$/\1/p')
-          FORTIFY_USER=${{ secrets.FORTIFY_USER }} FORTIFY_API_TOKEN=${{ secrets.FORTIFY_API_TOKEN }} FORTIFY_TENANT=${{ secrets.FORTIFY_TENANT }} node .github/scripts/fortify-wait-fpr.js "$SCAN_ID"
+          FORTIFY_USER=${{ secrets.FORTIFY_USER }} FORTIFY_API_TOKEN=${{ secrets.FORTIFY_API_TOKEN }} FORTIFY_TENANT=${{ secrets.FORTIFY_TENANT }} node ../.github/scripts/fortify-wait-fpr.js "$SCAN_ID"
       - name: Display log
         if: always()
         run: |
